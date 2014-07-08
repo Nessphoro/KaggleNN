@@ -59,6 +59,18 @@ Useful citations are \cite{KW14,GKK13}.
 \end{algorithmic}
 \end{algorithm}
 
+\begin{algorithm}[H]
+\caption{Minimum Vertex Coverage (Greedy)}
+\begin{algorithmic}
+\State Let $X = set of all nodes$
+\State Sort $X$ by edges
+\While{X has edges}
+\State $deleteEdges(pop(X))$
+\State Sort $X$ by edges
+\EndWhile
+\end{algorithmic}
+\end{algorithm}
+
 This is a reference to \cref{alg:cool}
 
 You can do equations too
