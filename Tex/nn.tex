@@ -1,0 +1,97 @@
+\documentclass{article}
+
+\usepackage{fullpage}
+\usepackage{amsmath}
+\usepackage{latexsym}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{dsfont}
+\usepackage{mathtools}
+\usepackage[standard]{ntheorem}
+\usepackage{hyperref}
+\hypersetup{
+    bookmarks=true,         % show bookmarks bar?
+    unicode=false,          % non-Latin characters in AcrobatÕs bookmarks
+    pdftoolbar=true,        % show AcrobatÕs toolbar?
+    pdfmenubar=true,        % show AcrobatÕs menu?
+    pdffitwindow=false,     % window fit to page when opened
+    pdfstartview={FitH},    % fits the width of the page to the window
+    pdftitle={My title},    % title
+    pdfauthor={Author},     % author
+    pdfsubject={Subject},   % subject of the document
+    pdfcreator={Creator},   % creator of the document
+    pdfproducer={Producer}, % producer of the document
+    pdfkeywords={keyword1} {key2} {key3}, % list of keywords
+    pdfnewwindow=true,      % links in new window
+    colorlinks=true,       % false: boxed links; true: colored links
+    linkcolor=red,          % color of internal links (change box color with linkbordercolor)
+    citecolor=blue,        % color of links to bibliography
+    filecolor=magenta,      % color of file links
+    urlcolor=cyan           % color of external links
+}
+\usepackage{times}
+\usepackage{natbib}
+\usepackage[capitalize]{cleveref}
+
+\title{This is a title}
+\author{These are authors}
+
+\begin{document}
+\maketitle
+
+\section{Introduction}
+
+Useful citations are \cite{KW14,GKK13}.
+
+\section{Algorithm}
+
+\begin{algorithm}[H]
+\caption{A Cool Algorithm}\label{alg:cool}
+\begin{algorithmic}
+\State Let $x = 2$
+\For{$n \in 1,\ldots,n$}
+\State // do something
+\If{this}
+\State // do that
+\EndIf
+\EndFor
+\end{algorithmic}
+\end{algorithm}
+
+This is a reference to \cref{alg:cool}
+
+You can do equations too
+\begin{align}
+3 + 5 
+&= 8 \\
+&= 16 - 8 \\
+&= 32 - 16 - 8
+\end{align}
+or with functions
+\begin{align}
+\sqrt{\frac{1}{n} \log n} + \frac{c}{n} + \gamma \exp\left(-\frac{1}{d}\right)
+\end{align}
+
+\begin{theorem}
+This theorem is true.
+\end{theorem}
+
+\begin{proof}
+A proof that the previous theorem is true.
+\end{proof}
+
+\subsection{A subsection}
+
+\subsubsection{A subsubsection}
+
+\subsubsection*{An unnumbered subsubsection} blah blah
+
+\section{Experimental Results}
+
+\section{Conclusion}
+
+\bibliographystyle{plain}
+\bibliography{nn}
+
+\end{document}
+
