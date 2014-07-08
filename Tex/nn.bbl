@@ -1,0 +1,13 @@
+\begin{thebibliography}{1}
+
+\bibitem{GKK13}
+Lee-Ad Gottlieb, Aryeh Kontorovich, and Robert Krauthgamer.
+\newblock Efficient classification for metric data.
+\newblock {\em arXiv preprint arXiv:1306.2547}, 2013.
+
+\bibitem{KW14}
+Aryeh Kontorovich and Roi Weiss.
+\newblock A bayes consistent 1-nn classifier.
+\newblock {\em arXiv preprint arXiv:1407.0208}, 2014.
+
+\end{thebibliography}
