@@ -46,14 +46,15 @@ Useful citations are \cite{KW14,GKK13}.
 \section{Algorithm}
 
 \begin{algorithm}[H]
-\caption{A Cool Algorithm}\label{alg:cool}
+\caption{Connect nodes}\label{alg:cool}
 \begin{algorithmic}
-\State Let $x = 2$
-\For{$n \in 1,\ldots,n$}
-\State // do something
-\If{this}
-\State // do that
+\State Let $X = set of all nodes$
+\For{$x \in X$}
+\For{$y \in x \ldots X_n$}
+\If{$dist(x,y) < \gamma \And !(x.type==y.type)$}
+\State connect(x,y)
 \EndIf
+\EndFor
 \EndFor
 \end{algorithmic}
 \end{algorithm}
