@@ -51,7 +51,7 @@ Useful citations are \cite{KW14,GKK13}.
 \State Let $X = set of all nodes$
 \For{$x \in X$}
 \For{$y \in x \ldots X_n$}
-\If{$dist(x,y) < \gamma \And x.type \ne y.type$}
+\If{$dist(x,y) < \gamma \And !(x.type==y.type)$}
 \State connect(x,y)
 \EndIf
 \EndFor
