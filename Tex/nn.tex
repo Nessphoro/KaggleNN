@@ -79,6 +79,18 @@ Useful citations are \cite{KW14,GKK13}.
 \end{algorithmic}
 \end{algorithm}
 
+\begin{algorithm}[H]
+\caption{Minimum Vertex Coverage (Not-Greedy)}
+\begin{algorithmic}
+\State Let $X$ = set of all nodes
+\While{X has edges}
+\State $x$ = random node from $X$
+\State $y$ = random connected node to $x$
+\State $delete$ $x$,$y$ from $X$
+\EndWhile
+\end{algorithmic}
+\end{algorithm}
+
 This is a reference to \cref{alg:cool}
 
 You can do equations too
