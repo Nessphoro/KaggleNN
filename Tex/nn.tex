@@ -62,11 +62,18 @@ Useful citations are \cite{KW14,GKK13}.
 \begin{algorithm}[H]
 \caption{Minimum Vertex Coverage (Greedy)}
 \begin{algorithmic}
-\State Let $X = set of all nodes$
+\State Let $X$ = set of all nodes of type $X$
+\State Let $Y$ = set of all nodes of type $Y$
 \State Sort $X$ by edges
+\State Sort $Y$ by edges
 \While{X has edges}
+\If {numOfEdges(peek($X$))>numOfEdges(peek($Y$))}
 \State $deleteEdges(pop(X))$
-\State Sort $X$ by edges
+\Comment{Sort included in delete edges. Swap nodes upon removal of edge if next node has more edges.}
+\Else
+\State $deleteEdges(pop(Y))$
+\Comment{Sort included in delete edges. Swap nodes upon removal of edge if next node has more edges.}
+\EndIf
 \EndWhile
 \end{algorithmic}
 \end{algorithm}
