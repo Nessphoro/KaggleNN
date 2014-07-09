@@ -48,7 +48,9 @@ Useful citations are \cite{KW14,GKK13}.
 \begin{algorithm}[H]
 \caption{Connect nodes}\label{alg:cool}
 \begin{algorithmic}
-\State Let $X = set of all nodes$
+\State Let $X =$ set of all nodes
+\Comment{Node format consists of integer representing number of edges. Then list of all edges.}
+\Comment{Edges format consists of pointer to other Node it is connected to and a pointer to its counterpart in the other Node.}
 \For{$x \in X$}
 \For{$y \in x \ldots X_n$}
 \If{$dist(x,y) < \gamma \And x.type \ne y.type$}
@@ -67,7 +69,7 @@ Useful citations are \cite{KW14,GKK13}.
 \State Sort $X$ by edges
 \State Sort $Y$ by edges
 \While{X has edges}
-\If {numOfEdges(peek($X$))>numOfEdges(peek($Y$))}
+\If {numOfEdges(peek($X$)) $>$ numOfEdges(peek($Y$))}
 \State $deleteEdges(pop(X))$
 \Comment{Sort included in delete edges. Swap nodes upon removal of edge if next node has more edges.}
 \Else
