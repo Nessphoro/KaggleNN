@@ -1,81 +1,189 @@
-#include "main.h"
+// CWorker.cpp : Defines the entry point for the console application.
+//
 
+#include "main.h"
 
 namespace std {
 
-  template <>
-  struct hash<DistanceKey>
-  {
-    std::size_t operator()(const DistanceKey& k) const
-    {
-      using std::size_t;
-      using std::hash;
-      uint64_t prehashed = ((((uint64_t)k.FirstNode)<<32) | (uint64_t)k.SecondNode);
-/*
-	prehashed ^= prehashed >> 33;
-	prehashed *= 0xff51afd7ed558ccd;
-	prehashed ^= prehashed >> 33;
-	prehashed *= 0xc4ceb9fe1a85ec53;
-	prehashed ^= prehashed >> 33;
-*/
-	return prehashed;
-    }
-  };
-
-}
-
-int main(int argc, char** argv)
-{
-	//Code to precompute Distances
-	RawSample* samples=new RawSample[250000];
-	std::unordered_map<DistanceKey,uint32_t> distances;
-	std::cout<<sizeof(size_t)<<std::endl;
-	std::cout << "Initializing reader\n";
-	io::CSVReader<33> reader("training.csv");
-	reader.read_header(io::ignore_extra_column,"EventId","DER_mass_MMC","DER_mass_transverse_met_lep","DER_mass_vis","DER_pt_h","DER_deltaeta_jet_jet","DER_mass_jet_jet",
-						"DER_prodeta_jet_jet","DER_deltar_tau_lep","DER_pt_tot","DER_sum_pt","DER_pt_ratio_lep_tau","DER_met_phi_centrality","DER_lep_eta_centrality",
-						"PRI_tau_pt","PRI_tau_eta","PRI_tau_phi","PRI_lep_pt","PRI_lep_eta","PRI_lep_phi","PRI_met","PRI_met_phi","PRI_met_sumet","PRI_jet_num",
-						"PRI_jet_leading_pt","PRI_jet_leading_eta","PRI_jet_leading_phi","PRI_jet_subleading_pt","PRI_jet_subleading_eta","PRI_jet_subleading_phi","PRI_jet_all_pt","Weight","Label");
-	RawSample buffer; 
-	std::cout<<"Begin loading\n";
-	while(reader.read_row(buffer.EventId,buffer.Features[0],buffer.Features[1],buffer.Features[2],buffer.Features[3],buffer.Features[4],
-buffer.Features[5],buffer.Features[6],buffer.Features[7],buffer.Features[8],buffer.Features[9],buffer.Features[10],buffer.Features[11],buffer.Features[12],buffer.Features[13],buffer.Features[14],buffer.Features[15],buffer.Features[16],buffer.Features[17],buffer.Features[18],buffer.Features[19],buffer.Features[20],buffer.Features[21],buffer.Features[22],buffer.Features[23],buffer.Features[24],buffer.Features[25],buffer.Features[26],buffer.Features[27],buffer.Features[28],buffer.Features[29], buffer.Weight,buffer.Label))
+	template <>
+	struct hash<DistanceKey>
 	{
-		samples[buffer.EventId-100000]=buffer;
-	}
-	std::cout<<samples[0].EventId<<std::endl;
-	std::cout<<samples[1].EventId<<std::endl;
-	std::cout<<"Done loading\nLoading Distance Database\n";
-	std::ifstream db("data/y_1000.gzip",std::ios_base::in | std::ios_base::binary);
-	char* fileBuff=new char[12];
-	//if(db.is_open())
-	//{
-		std::cout<<"Open\n";
-		boost::iostreams::filtering_istream in;
-    		in.push(boost::iostreams::gzip_decompressor());
-		in.push(db);
-    		//in.push(boost::iostreams::file_descriptor_source("data/y_1000.gzip"));
-		int counter=0;
-		while(true)
+		std::size_t operator()(const DistanceKey& k) const
 		{
-			in.read(fileBuff,12);
-			if(true)
-			{	
-				DistanceKey di;
-				uint32_t distance=(int)*(float*)&fileBuff[8];
-				di.FirstNode = *(uint32_t*)&fileBuff[0];
-				di.SecondNode = *(uint32_t*)&fileBuff[4];
-				counter++;
-				std::cout<<*(uint32_t*)&fileBuff[0]<<":"<<*(uint32_t*)&fileBuff[4]<<std::endl;
-				char temp;
-				std::cin>>temp;
-				distances.insert(std::make_pair<DistanceKey,uint32_t>((DistanceKey)di,(uint32_t)distance));
-				if(counter % 1000000 == 0)
-					std::cout<<"Loaded: "<<distances.size()<<std::endl;
-			}
-			in.seek(counter*12);
+			using std::size_t;
+			using std::hash;
+			uint64_t prehashed = ((((uint64_t)k.FirstNode) << 32) | (uint64_t)k.SecondNode);
+
+			prehashed ^= prehashed >> 33;
+			prehashed *= 0xff51afd7ed558ccd;
+			prehashed ^= prehashed >> 33;
+			prehashed *= 0xc4ceb9fe1a85ec53;
+			prehashed ^= prehashed >> 33;
+
+			return prehashed;
 		}
-		std::cout<<"Done\n";
-	//}
-	//db.close();
+	};
+
 }
+
+
+
+
+const uint32_t Gamma = 750;
+uint32_t TotalEdges = 0;
+
+int main(int argc, char* argv[])
+{
+	//Data structures
+	std::unordered_map<uint32_t, RawSample> signals;
+	std::unordered_map<uint32_t, RawSample> backgrounds;
+	std::vector<RawSample> finalSet;
+
+	std::cout << "Loading samples\n of size:" << sizeof(RawSample);
+	FILE* samplesFiles = fopen("data.bin", "rb");
+
+	if (samplesFiles)
+	{
+		RawSample sample;
+		while (fread(&sample, 132, 1, samplesFiles))
+		{
+			sample.Map = new std::unordered_set<uint32_t>();
+			if (sample.Label == 1)
+			{
+				signals.insert(std::pair<const uint32_t, RawSample>(sample.EventId, sample));
+			}
+			else
+			{
+				backgrounds.insert(std::pair<const uint32_t, RawSample>(sample.EventId, sample));
+			}
+		}
+	}
+
+	fclose(samplesFiles);
+
+	std::cout << "Initializing reader\n";
+	FILE* file = fopen("distances.bin", "rb");
+	file->_bufsiz = 4096 * 1024;
+	unsigned char fileBuff[12];
+
+	std::cout << "Open\n";
+	int counter = 0;
+	if (file)
+	{
+		int lc = 0;
+		while (fread(fileBuff, 12, 1, file))
+		{
+			if (lc++ % 3 != 0)
+				continue; // We only load every third sample to speed it up during debugging
+			DistanceKey di;
+
+			uint32_t distance = (int)*(float*)&fileBuff[8];
+			di.FirstNode = *(uint32_t*)&fileBuff[0];
+			di.SecondNode = *(uint32_t*)&fileBuff[4];
+			//Load the data structures
+			if (distance < Gamma)
+			{
+				signals.find(di.FirstNode)->second.Map->insert(di.SecondNode);
+				backgrounds.find(di.SecondNode)->second.Map->insert(di.FirstNode);
+				counter++;
+				TotalEdges++;
+				if (counter % 1000000 == 0)
+					std::cout << "Loaded: " << counter << std::endl;  //INFO
+			}
+		}
+		std::cout << "Done\n";
+	}
+	fclose(file);
+
+
+	std::cout << "Starting minimal vertex cover algorithm\nScanning for isolated nodes...\n";
+	std::vector<uint32_t> keysToRemove;
+	for (std::unordered_map<uint32_t, RawSample>::iterator start = signals.begin(); start != signals.end(); start++)
+	{
+		if (start->second.Map->size() == 0)
+		{
+			keysToRemove.push_back(start->first);
+		}
+	}
+
+	std::cout << "To be removed: " << keysToRemove.size() << std::endl;
+
+	for (std::vector<uint32_t>::iterator start = keysToRemove.begin(); start != keysToRemove.end(); start++)
+	{
+		delete signals.find(*start)->second.Map;
+		finalSet.push_back(signals.find(*start)->second);
+		signals.erase(*start);
+	}
+	keysToRemove.clear();
+
+	std::cout << "Scanning for isolated nodes pass 2...\n";
+	for (std::unordered_map<uint32_t, RawSample>::iterator start = backgrounds.begin(); start != backgrounds.end(); start++)
+	{
+		if (start->second.Map->size() == 0)
+		{
+			keysToRemove.push_back(start->first);
+		}
+	}
+	
+
+	std::cout << "To be removed: " << keysToRemove.size() << std::endl;
+
+	for (std::vector<uint32_t>::iterator start = keysToRemove.begin(); start != keysToRemove.end(); start++)
+	{
+		delete backgrounds.find(*start)->second.Map;
+		finalSet.push_back(backgrounds.find(*start)->second);
+		backgrounds.erase(*start);
+	}
+	keysToRemove.clear();
+	//The above code clears nodes that aren't connected to anything
+
+
+	//Minimum vertex cover algo is below
+	while (signals.size() != 0)
+	{
+		std::cout << "Left: " << signals.size() << std::endl; //INFO
+
+		RawSample signal = signals.begin()->second;
+		uint32_t signalId = signal.EventId;
+		uint32_t connection = *signal.Map->begin();
+		RawSample background = backgrounds.find(connection)->second;
+
+		for (std::unordered_set<uint32_t>::iterator start = signal.Map->begin(); start != signal.Map->end(); start++)
+		{
+			RawSample bg = backgrounds.find(*start)->second;
+			bg.Map->erase(signalId);
+			if (bg.Map->size() == 0)
+			{
+				delete bg.Map;
+				bg.Map = 0;
+				if (background.EventId == bg.EventId)
+				{
+					background.Map = 0;
+				}
+				finalSet.push_back(bg);
+				backgrounds.erase(bg.EventId);
+			}
+		}
+
+		if (background.Map)
+		{
+			for (std::unordered_set<uint32_t>::iterator start = background.Map->begin(); start != background.Map->end(); start++)
+			{
+				RawSample sg = signals.find(*start)->second;
+				sg.Map->erase(connection);
+				if (sg.Map->size() == 0)
+				{
+					delete sg.Map;
+					sg.Map = 0;
+					finalSet.push_back(sg);
+					signals.erase(sg.EventId);
+				}
+			}
+		}
+		signals.erase(signalId);
+		backgrounds.erase(connection);
+	}
+
+
+}
+
