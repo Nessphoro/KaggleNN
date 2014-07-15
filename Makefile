@@ -1,12 +1,22 @@
-BOOST_LIB = /cshome/malynin/boost_1_55_0/stage/lib
-ZLIB=/cshome/malynin/zlib/lib
-BOOST_INC = /cshome/malynin/boost_1_55_0
+CPP_FLAGS := -std=c++0x
+
+
 all: prog
 
-prog:obj/main.o
-	g++ -o prog obj/main.o $(BOOST_LIB)/libboost_iostreams.a $(ZLIB)/libz.a -pthread
+cworker :obj/stdafx.o obj/CWorker.o obj/DatabaseBuilder.o obj/GraphManager.o obj/Tester.o
+	g++ -o cworker obj/stdafx.o obj/CWorker.o obj/DatabaseBuilder.o obj/GraphManager.o obj/Tester.o
 
-obj/main.o: main.cpp
-	g++ -c main.cpp -std=c++0x -o obj/main.o -Ilib/ -I $(BOOST_INC)
+obj/stdafx.o: stdafx.cpp
+	g++ -c $< $(CPP_FLAGS) -o $@
 
+obj/CWorker.o: CWorker.cpp
+	g++ -c $< $(CPP_FLAGS) -o $@
 
+obj/DatabaseBuilder.o: DatabaseBuilder.cpp
+	g++ -c $< $(CPP_FLAGS) -o $@
+
+obj/GraphManager.o: GraphManager.cpp
+	g++ -c $< $(CPP_FLAGS) -o $@
+
+obj/Tester.o: Tester.cpp
+	g++ -c $< $(CPP_FLAGS) -o $@
