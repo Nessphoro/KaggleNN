@@ -9,7 +9,7 @@ class KNN
 {
 
 	static arma::fmat metric;
-	kgraph::KGraph* signalIndex, *backgroundIndex;
+
 
 public:
 	KNN();

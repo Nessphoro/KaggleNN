@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "KNN.h"
 #include <omp.h>
-#include <kgraph.h>
+
 
 float KNN::mDistance(const WrappedSample x, const WrappedSample y)
 {

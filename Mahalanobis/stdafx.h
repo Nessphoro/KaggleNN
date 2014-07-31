@@ -14,8 +14,6 @@
 #include <unordered_set>
 #include "Common.h"
 #include <ctime>
-#include <kgraph.h>
-#include <kgraph-data.h>
 #include "KNN.h"
 #define KNUM 3
 

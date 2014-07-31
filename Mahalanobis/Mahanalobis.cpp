@@ -78,6 +78,22 @@ arma::fmat mat_C(WrappedSample* x, WrappedSample* y)
 	return (x->MatrixVectors - y->MatrixVectors) * arma::trans((x->MatrixVectors - y->MatrixVectors));
 }
 
+std::vector<TriggerEntry> subtractVector(std::vector<TriggerEntry>& x, std::vector<TriggerEntry>& y){ //remove commom elements leaving x
+	std::unordered_set<uint64_t> observed(x.size());
+	std::vector<TriggerEntry> output(x.size());
+	for (auto entry : y)
+	{
+		observed.insert(entry.Center ^ (entry.Impostor << 19) ^ (entry.Target << (19 * 2)));
+	}
+	for (auto entry : x)
+	{
+		uint64_t hash = entry.Center ^ (entry.Impostor << 19) ^ (entry.Target << (19 * 2));
+		if (observed.count(hash) == 0)
+			output.push_back(entry);
+	}
+
+	return output;
+}
 
 std::vector<TriggerEntry> setUnion(std::vector<TriggerEntry>& x, std::vector<TriggerEntry>& y)
 {
@@ -152,6 +168,24 @@ void GetNewSet(std::vector<TriggerEntry>& triggers, std::vector<TriggerEntry>& n
 	}
 }
 
+arma::fmat updateGradient(arma::fmat gt, std::vector<TriggerEntry> nt, std::vector<TriggerEntry> nt1, std::vector<WrappedSample> wrapped)
+{
+	std::vector<TriggerEntry> removed = subtractVector(nt, nt1);
+	std::vector<TriggerEntry> added = subtractVector(nt1, nt);
+	for (auto sample : removed)
+	{
+		gt -= 0.5*(mat_C(&wrapped[sample.Center], &wrapped[sample.Impostor]) - mat_C(&wrapped[sample.Center], &wrapped[sample.Target]));
+
+	}
+	for (auto sample : added)
+	{
+		gt += 0.5*(mat_C(&wrapped[sample.Center], &wrapped[sample.Impostor]) - mat_C(&wrapped[sample.Center], &wrapped[sample.Target]));
+
+	}
+	return gt;
+}
+
+
 int _tmain(int argc, _TCHAR* argv[])
 {
 	std::vector<RawSample> samples = loadSamples("samples.bin", false); //TODO: load
@@ -196,10 +230,13 @@ int _tmain(int argc, _TCHAR* argv[])
 	SetTargets(wrapped, classifier);
 	//Main loop
 	int counter = 0;
-	std::vector<TriggerEntry> oldSet, newSet, active;
+	std::vector<TriggerEntry> oldSet, newSet, active, removed, added;
 	arma::fmat metric(30, 30);
 	arma::fmat gradient(30, 30);
+
+
 	//Compute the initial gradient
+	const float mew = 0.5;
 	for (auto sample : wrapped)
 	{
 		gradient += 0.5* mat_C(&sample, &wrapped[sample.Targets[0]->EventId - 100000]);
@@ -212,14 +249,16 @@ int _tmain(int argc, _TCHAR* argv[])
 		
 		if (counter % 15 == 0)
 		{
+			oldSet = newSet;
 			ComputeExactly(active, wrapped, classifier);
-			newSet = active;
+			newSet = active; 
 			
 		}
 		else
 		{
 
 		}
+		updateGradient(gradient, subtractVector(oldSet, newSet), subtractVector(newSet, oldSet), wrapped);
 		classifier.Rebuild(metric);
 	}
 	
